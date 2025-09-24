@@ -25,7 +25,9 @@ Las solución a GetEstimatedLatency está en AudioEngine.cs (ver código adjunto
 ### Extra.
 Gráfico de DSP time en Godot.
 
-<video controls src="godot 3.mp4" title="Title"></video>
+https://github.com/user-attachments/assets/3761cf9e-9332-43a7-b270-aab8f2d70e8b
+
+
 
 
 
