@@ -14,7 +14,7 @@ using UnityEngine;
 /// between different audio time sources.
 ///
 /// Features:
-/// - Smooth, monotonic song time calculation without backwards jumps
+/// - Smooth, monotonic Audio time calculation without backwards jumps
 /// - Automatic audio latency compensation based on buffer settings
 /// - Drift detection and correction between DSP time and AudioSource time
 /// - Configurable drift tolerance for different precision requirements
@@ -22,7 +22,7 @@ using UnityEngine;
 /// Usage:
 /// 1. Create with a configured SmoothDspTimeCalculator
 /// 2. Call UpdateSmoothDspTime() every frame with AudioSource.time
-/// 3. Use GetChartSongTime() to get precise timing for note spawning/judging
+/// 3. Use GetAudioTime() to get precise timing for note spawning/judging
 /// </summary>
 public class AudioEngine {
 	private readonly SmoothDspTimeCalculator _smoothDspTimeCalculator;
@@ -36,16 +36,16 @@ public class AudioEngine {
 	}
 
 	/// <summary>
-	/// Calculates the current audio time given a smoothed dsp time input.
+	/// Calculates the current audio time for chart/note synchronization.
 	/// This is the primary timing value used for spawning notes and judging player input.
 	/// </summary>
-	/// <param name="audioStartDspTime">The DSP time when the song started playing.</param>
-	/// <param name="secondsToFirstBeat">Offset from song start to the first beat (song's initial silence/intro).</param>
+	/// <param name="audioStartDspTime">The DSP time when the audio started playing.</param>
+	/// <param name="secondsToFirstBeat">Offset from audio start to the first beat (audio's initial silence/intro).</param>
 	/// <param name="latencyCompensation">Additional user-configured latency compensation in seconds.</param>
 	/// <returns>Current audio time in seconds, accounting for all timing corrections and latencies.</returns>
 	public double GetAudioTime(double audioStartDspTime, double secondsToFirstBeat, double latencyCompensation) {
 		double smoothDspTime = _smoothDspTimeCalculator.SmoothDspTime;
-		double songTime = smoothDspTime - audioStartDspTime
+		double audioTime = smoothDspTime - audioStartDspTime
 										- secondsToFirstBeat
 										- latencyCompensation
 										- GetEstimatedLatency();
@@ -57,13 +57,13 @@ public class AudioEngine {
 	/// Should be called every frame during active audio playback.
 	/// </summary>
 	/// <param name="audioSourceTime">Current AudioSource.time value for drift comparison.</param>
-	/// <param name="songStartDspTime">Reference to song start time that may be adjusted for drift correction.</param>
-	public void UpdateSmoothDspTime(double audioSourceTime, ref double songStartDspTime) {
+	/// <param name="audioStartDspTime">Reference to audio start time that may be adjusted for drift correction.</param>
+	public void UpdateSmoothDspTime(double audioSourceTime, ref double audioStartDspTime) {
 		_smoothDspTimeCalculator.UpdateLinearRegression();
 
 		double smoothDspTime = _smoothDspTimeCalculator.SmoothDspTime;
 
-		CheckForDrifts(ref songStartDspTime, smoothDspTime, audioSourceTime, timingDriftWindowMs: 50);
+		CheckForDrifts(ref audioStartDspTime, smoothDspTime, audioSourceTime, timingDriftWindowMs: 50);
 	}
 
 	/// <summary>
@@ -87,21 +87,20 @@ public class AudioEngine {
 	/// - System performance variations
 	/// - Different timing sources becoming desynchronized
 	///
-	/// When significant drift is detected, the song start time is adjusted to maintain
+	/// When significant drift is detected, the audio start time is adjusted to maintain
 	/// synchronization between the two timing sources.
 	/// </summary>
-	/// <param name="songStartDspTime">Reference to song start time that will be modified if drift is detected.</param>
+	/// <param name="audioStartDspTime">Reference to audio start time that will be modified if drift is detected.</param>
 	/// <param name="smoothDspTime">Current smooth DSP time from the calculator.</param>
 	/// <param name="audioSourceTime">Current AudioSource.time for comparison.</param>
 	/// <param name="timingDriftWindowMs">Drift tolerance in milliseconds before correction is applied.</param>
-	private void CheckForDrifts(ref double songStartDspTime, double smoothDspTime, double audioSourceTime, double timingDriftWindowMs) {
-		double timeFromDsp = smoothDspTime - songStartDspTime;
+	private void CheckForDrifts(ref double audioStartDspTime, double smoothDspTime, double audioSourceTime, double timingDriftWindowMs) {
+		double timeFromDsp = smoothDspTime - audioStartDspTime;
 		double timeFromAudioSource = audioSourceTime;
 		double timeDiff = timeFromDsp - timeFromAudioSource;
 
 		if (abs(timeDiff) > timingDriftWindowMs + double.Epsilon) {
-			songStartDspTime += timeDiff;
+			audioStartDspTime += timeDiff;
 		}
 	}
 }
-
