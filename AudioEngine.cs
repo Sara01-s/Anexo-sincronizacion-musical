@@ -36,20 +36,20 @@ public class AudioEngine {
 	}
 
 	/// <summary>
-	/// Calculates the current song time for chart/note synchronization.
+	/// Calculates the current audio time given a smoothed dsp time input.
 	/// This is the primary timing value used for spawning notes and judging player input.
 	/// </summary>
-	/// <param name="songStartDspTime">The DSP time when the song started playing.</param>
+	/// <param name="audioStartDspTime">The DSP time when the song started playing.</param>
 	/// <param name="secondsToFirstBeat">Offset from song start to the first beat (song's initial silence/intro).</param>
 	/// <param name="latencyCompensation">Additional user-configured latency compensation in seconds.</param>
-	/// <returns>Current song time in seconds, accounting for all timing corrections and latencies.</returns>
-	public double GetChartSongTime(double songStartDspTime, double secondsToFirstBeat, double latencyCompensation) {
+	/// <returns>Current audio time in seconds, accounting for all timing corrections and latencies.</returns>
+	public double GetAudioTime(double audioStartDspTime, double secondsToFirstBeat, double latencyCompensation) {
 		double smoothDspTime = _smoothDspTimeCalculator.SmoothDspTime;
-		double songTime = smoothDspTime - songStartDspTime
+		double songTime = smoothDspTime - audioStartDspTime
 										- secondsToFirstBeat
 										- latencyCompensation
 										- GetEstimatedLatency();
-		return songTime;
+		return audioTime;
 	}
 
 	/// <summary>
@@ -104,3 +104,4 @@ public class AudioEngine {
 		}
 	}
 }
+
